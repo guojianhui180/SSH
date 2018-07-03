@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 2.3//EN"
+        "http://struts.apache.org/dtds/struts-2.3.dtd">
+<struts>
+
+    <constant name="struts.action.extension" value="action,do,"></constant>
+    <constant name="struts.ognl.allowStaticMethodAccess" value="false"></constant>
+    <constant name="struts.ui.theme" value="xhtml"></constant>
+    <constant name="struts.custom.i18n.resources" value="i18n"></constant>
+    <constant name="struts.multipart.maxSize" value="1000000000"/>
+    <package name="default" extends="struts-default">
+        <interceptors>
+            <interceptor name="AuthorityIntercpt" class="com.gjh.interceptor.AuthorityInterceptor">
+            </interceptor>
+            <interceptor-stack name="mystack">
+                <interceptor-ref name="AuthorityIntercpt"></interceptor-ref>
+                <interceptor-ref name="paramsPrepareParamsStack">
+                    <param name="prepare.alwaysInvokePrepare">false</param>
+                    <param name="fileUpload.allowedExtensions">xlsx</param>
+                    <param name="fileUpload.allowedTypes">application/vnd.openxmlformats-officedocument.spreadsheetml.sheet</param>
+                    <param name="fileUpload.maximumSize">20971520</param>
+                </interceptor-ref>
+            </interceptor-stack>
+        </interceptors>
+        <default-interceptor-ref name="mystack"></default-interceptor-ref>
+        <action name="doamcaction-*" class="AmcAction" method="{1}">
+            <result>amc/delete.jsp</result>
+            <result name="{1}" type="stream">
+                <param name="contentType">text/html</param>
+                <param name="inputName">inputStream</param>
+            </result>
+            <result name="login_failed">amc/login_fail.jsp</result>
+            <result name="authority_failed">amc/authority_fail.jsp</result>
+        </action>
+        <action name="doamcaction-upload" class="AmcAction" method="upload">
+            <exception-mapping exception="java.lang.Exception" result="except">
+            </exception-mapping>
+            <interceptor-ref name="tokenSession"/>
+            <interceptor-ref name="mystack"/>
+            <result name="upload">amc/upload_success.jsp</result>
+            <result name="invalid.token">amc/tokenerror.jsp</result>
+            <result name="except">amc/exception.jsp</result>
+            <result name="input">amc/filenotallowed.jsp</result>
+            <result name="login_failed">amc/login_fail.jsp</result>
+            <result name="authority_failed">amc/authority_fail.jsp</result>
+        </action>
+        <action name="download-module" class="DownloadAction">
+            <interceptor-ref name="defaultStack"></interceptor-ref>
+            <result type="stream">
+                <param name="bufferSize">2048</param>
+                <param name="inputName">inputStream</param>
+                <param name="contentDisposition">attachment;filename=${fileName}</param>
+                <param name="contentType">${contentType}</param>
+            </result>
+        </action>
+        <action name="saveAuthority" class="authority" method="saveAuthority">
+              <interceptor-ref name="defaultStack"></interceptor-ref>
+              <result name="saveauthority" type="stream">
+                  <param name="contentType">text/html</param>
+                  <param name="inputName">inputStream</param>
+              </result>
+        </action>
+        <action name="saveUser" class="authority" method="saveUserMsg">
+            <interceptor-ref name="defaultStack"></interceptor-ref>
+            <result name="saveuser" type="stream">
+                <param name="contentType">text/html</param>
+                <param name="inputName">inputStream</param>
+            </result>
+        </action>
+
+    </package>
+
+
+</struts>
